@@ -13,7 +13,7 @@ suite: !Cycle
         <<: *exclusive_task_template
         Trigger: !Depend  fcst_prep
         resources: !calc partition.resources.run_fcst
-        config: [ base ]
+        config: [ base fcst ]
         J_JOB: JJOB_FORECAST
 
       post: !Task

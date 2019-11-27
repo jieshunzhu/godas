@@ -5,6 +5,12 @@
 
 config_base:
   filename: config.base
+  cpl: !FirstTrue
+    - when: !calc doc.settings.cplflx==".true."
+      do: .true.
+    - when: !calc doc.settings.cplice==".true."
+      do: .true.
+    - otherwise: .false.
   content: !expand |
     #!/bin/ksh -x
     
@@ -20,6 +26,11 @@ config_base:
     # Machine environment
     export machine="{doc.platform.name}"
     
+    export cpl="{cpl}"
+    export cplflx="{doc.settings.cplflx}"
+    export cplice="{doc.settings.cplice}"
+    export nems_temp="{doc.settings.nems_temp}"
+
     # EMC parallel or NCO production
     export RUN_ENVIR="emc"
     
@@ -88,6 +99,7 @@ config_base:
     export ROTDIR="{doc.places.ROTDIR}"
     export RUNDIR="{doc.places.RUNDIR}"
     export RUNCDATE="{doc.places.RUNDIR}/$CDATE"
+    export DATAROOT=$RUNCDATE
 
     # DA cycle info
     export godas_cyc={doc.settings.godas_cyc}

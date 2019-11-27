@@ -1,44 +1,79 @@
 #!/bin/bash -l
-set -e
+set -x
 
-cat <<EOF
-#================================================================================
-#================================================================================
-# JJOB_FORECAST
-#   Run the forecast and then run the post_forecast script to copy over output
-#================================================================================
-#================================================================================
-EOF
+export PS4='$SECONDS + '
+date
 
+source $ROOT_GODAS_DIR/modulefiles/module-setup.sh.inc
 module purge
-source $MOD_PATH/godas.fcst
+module use -a $ROOT_GODAS_DIR/modulefiles
+cd $ROOT_GODAS_DIR/modulefiles
+module load godas.fcst
 module list
 
-#TODO: DATA defined multiple places...
-DATA=$RUNCDATE/fcst
-FORECAST_EXE=${ROOT_GODAS_DIR}/src/DATM-MOM6-CICE5.fd/NEMS/exe/nems_datm_mom6_cice5.x
+#############################
+# Source relevant config files
+#############################
+configs="base fcst"
+export EXPDIR=${EXPDIR:-$HOMEgfs/parm/config}
+config_path=${EXPDIR:-$NWROOT/gfs.${gfs_ver}/parm/config}
+for config in $configs; do
+    . $config_path/config.$config
+    status=$?
+    [[ $status -ne 0 ]] && exit $status
+done
 
-#TODO: This should be a configuration calculation/currently defined in multiple places 
-#for now all these values should be hardcoded, these are things that should be controld 
-#by global-workflow forecast anyways
-##ATMPETS=${ATMPETS:-"72"}   #Number of ATM Pets
-##OCNPETS=${OCNPETS:-"120"}  #number of ocean pets
-##ICEPETS=${ICEPETS:-"48"}   #number of ice pets
-##NTASKS_TOT=${NTASKS_TOT:-"$(( $ATMPETS+$OCNPETS+$ICEPETS ))"} #240
-
-NPE_FCST=${NTASKS_TOT:-240}
-
-
-echo "Forecast Run Directory: $DATA" 
-echo "Forecast exe: $FORECAST_EXE"
-echo "Number of tasks: $NPE_FCST"
-echo "Run command: srun -n $NPE_FCST ${FORECAST_EXE}"
-
+##############################################
+# Obtain unique process id (pid) and make temp directory
+##############################################
+export jobid=${job}.${PBS_JOBID:-$$}
+export pid=${pid:-$$}
+export outid=${outid:-"LL$job"}
+export DATA=${DATA:-${DATAROOT}/${jobid:?}}
+mkdir -p $DATA
 cd $DATA
-srun -n $NPE_FCST ${FORECAST_EXE}
 
-echo "Finished forecast, now copy output using script: ${ROOT_GODAS_DIR}/scripts/post_forecast.sh"
-# Copy ICs for next cycle, copy output to save location, cleanup forecast directory 
-${ROOT_GODAS_DIR}/scripts/post_forecast.sh
+##############################################
+# Run setpdy and initialize PDY variables
+##############################################
+export cycle="t${cyc}z"
+setpdy.sh
+. ./PDY
 
-echo "End of Forecast for $CDATE" 
+##############################################
+# Determine Job Output Name on System
+##############################################
+export pgmout="OUTPUT.${pid}"
+export pgmerr=errfile
+
+##############################################
+# Set variables used in the exglobal script
+##############################################
+export CDATE=${CDATE:-${PDY}${cyc}}
+export CDUMP=${CDUMP:-"godas"}
+export RUN:-${RUN:-"data"}
+export inistep=initial
+export confignamevarfornems=$nems_temp
+
+###############################################################
+# Run relevant exglobal script
+
+${FORECASTSH:-$ROOT_GODAS_DIR/scripts/exglobal_fcst_nemsfv3gfs.sh.ecf}
+status=$?
+[[ $status -ne 0 ]] && exit $status
+##############################################
+# End JOB SPECIFIC work
+##############################################
+
+##############################################
+# Final processing
+##############################################
+if [ -e "$pgmout" ] ; then
+  cat $pgmout
+fi
+
+msg="ENDED NORMALLY."
+postmsg "$jlogfile" "$msg"
+
+date
+exit 0

@@ -13,5 +13,4 @@ EOF
 #TODO: DATA defined multiple places... 
 DATA=$RUNCDATE/fcst 
 
-${ROOT_GODAS_DIR}/scripts/prep_forecast.sh
-
+echo "running preparation step"

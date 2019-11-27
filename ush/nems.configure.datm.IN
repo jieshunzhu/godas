@@ -1,0 +1,5 @@
+EARTH_component_list: OCN
+OCN_model:            mom6
+runSeq::
+  OCN
+::

@@ -55,6 +55,7 @@ default_resources: &default_resources
       mpi_ranks: !calc doc.godas_resource_table.fcst_025[0]
       walltime: !calc doc.godas_resource_table.fcst_025[2]
       max_ppn: !calc doc.godas_resource_table.fcst_025[1]
+      OMP_NUM_THREADS: !calc doc.godas_resource_table.fcst_025[3]
 
   run_3denvar: !JobRequest
     - batch_memory: !calc doc.godas_resource_table.r3denvar[4]
