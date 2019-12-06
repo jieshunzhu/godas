@@ -52,7 +52,26 @@
 ##--------------------------------------------------------------------------------
 #
 
-forc_settings: &forc_settings
+forc_settings_defaults: &forc_settings_defaults
+  ATMPETS:             72
+  OCNPETS:             120
+  ICEPETS:             48
+  fcst_max_ppn:        24
+  max_threads:         2  
+  DT_ATMOS:            900
+  DT_THERM_MOM6:       1800
+  DT_DYNAM_MOM6:       900
+  DATM_FILENAME_BASE:  'cfsr.'
+  NFHOUT:              6
+  IATM:                1760
+  JATM:                880
+
+  FHMIN:               0
+  FHMAX:               24
+  FHOUT:               6
+  forecast_hours:      !calc tools.uniq(sorted(tools.seq(FHMIN,FHMAX,FHOUT)))
+
+  APRUN_FV3:           "srun --export=ALL"
   FORC_MEAN_FILE:      !expand "{ROOT_DIR}/DATA/fluxes/cfsr.6hr/%Y/%Y%m%d/cfsr.%Y%m%d.'#var#'.nc"
   FORC_VAR:            "PRATE,SLP,TMP.2m,SPFH.2m,UGRD.10m,VGRD.10m,DLWRF.sfc,DSWRF.sfc"
   FORC_VAR_POS:        "PRATE,SPFH.2m,DLWRF.sfc,DSWRF.sfc"

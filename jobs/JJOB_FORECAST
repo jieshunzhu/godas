@@ -51,8 +51,8 @@ export pgmerr=errfile
 ##############################################
 export CDATE=${CDATE:-${PDY}${cyc}}
 export CDUMP=${CDUMP:-"godas"}
-export RUN:-${RUN:-"data"}
-export inistep=initial
+export RUN=${RUN:-"data"}
+export inistep='restart'
 export confignamevarfornems=$nems_temp
 
 ###############################################################

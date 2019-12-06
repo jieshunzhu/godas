@@ -15,19 +15,52 @@ config_fcst:
     
     ########## config.fcst ##########
     # Forecast specific
-    
-    export npe_fcst="{doc.partition_common.resources.run_fcst[0].mpi_ranks}"
-    export NTHREADS_FV3="{doc.partition_common.resources.run_fcst[0].OMP_NUM_THREADS}"
-    export memory_fcst="1024M"
 
-    export FORECASTSH="$ROOT_GODAS_DIR/scripts/exglobal_fcst_nemsfv3gfs.sh"
-    export FCSTEXECDIR="$ROOT_GODAS_DIR/src/DATM-MOM6-CICE5.fd/NEMS/exe/"
+    export ATM_model='datm'
+    export OCN_model='mom6'
+    export ICE_model='cice'
+
+    export FIXmom="{doc.places.ROOT_GODAS_DIR}/fix/MOM6_FIX_mx025"
+    export FIXcice="{doc.places.ROOT_GODAS_DIR}/fix/CICE_FIX_mx025"
+
+    export NTASKS_TOT="{doc.partition_common.resources.run_coupled_fcst[0].mpi_ranks}"
+    export ATMPETS="{doc.forc_settings.ATMPETS}"
+    export OCNPETS="{doc.forc_settings.OCNPETS}"
+    export ICEPETS="{doc.forc_settings.ICEPETS}"
+    export NTHREADS_FV3="{doc.partition_common.resources.run_coupled_fcst[0].OMP_NUM_THREADS}"
+    export memory_fcst="1024M"
+    export restart_interval=86400
+
+    # Output frequency of the forecast model (for cycling)
+    export FHMIN={doc.forc_settings.FHMIN}
+    export FHMAX={doc.forc_settings.FHMAX}
+    export FHOUT={doc.forc_settings.FHOUT}
+    export FHRLST="{doc.forc_settings.forecast_hours}"
+
+    export DT_ATMOS="{doc.forc_settings.DT_ATMOS}"
+    export DT_CICE="{doc.forc_settings.DT_ATMOS}"     #CICE time step [seconds]
+    export DT_THERM_MOM6="{doc.forc_settings.DT_THERM_MOM6}"
+    export DT_DYNAM_MOM6="{doc.forc_settings.DT_DYNAM_MOM6}"
+    export CPL_SLOW=$DT_THERM_MOM6 
+    export CPL_FAST=$DT_ATMOS
+    export SCRIPTDIR={doc.places.ROOT_GODAS_DIR}/ush
+    export coupling_interval_fast_sec=$DT_ATMOS
+
+    export FORECASTSH="{doc.places.ROOT_GODAS_DIR}/scripts/exglobal_fcst_nemsfv3gfs.sh"
+    export FCSTEXECDIR="{doc.places.ROOT_GODAS_DIR}/src/DATM-MOM6-CICE5.fd/NEMS/exe/"
     export FCSTEXEC="{FCSTEXEC}"
+    export APRUN_FV3="{doc.forc_settings.APRUN_FV3}"
    
+    export DATM_FILENAME_BASE="{doc.forc_settings.DATM_FILENAME_BASE}"
+    export NFHOUT="{doc.forc_settings.NFHOUT}"
+    export IATM="{doc.forc_settings.IATM}"
+    export JATM="{doc.forc_settings.JATM}"
+    export MOM6_RESTART_SETTING="r"
+
     #---------------------------------------------------------------------
     
     if [[ $cpl == .true. ]] ; then # coupled model
-        export DIAG_TABLE="$HOMEgfs/parm/parm_fv3diag/diag_table_cpl"
+        export DIAG_TABLE="$SCRIPTDIR/diag_table_template"
     fi
     
     echo "END: config.fcst"

@@ -54,6 +54,7 @@ config_base:
     export GODAS_RC="{doc.places.GODAS_RC}"
     export STMP="{doc.places.SHORT_TERM_TEMP}/$USER"
     export PTMP="{doc.places.LONG_TERM_TEMP}/$USER"
+    export ICSDIR="{doc.places.ICSDIR}"
 
     export SOCA_EXEC="{doc.places.ROOT_GODAS_DIR}/build/bin/"
     export SOCA_STATIC="{doc.places.SOCA_STATIC}"
@@ -101,6 +102,11 @@ config_base:
     export RUNCDATE="{doc.places.RUNDIR}/$CDATE"
     export DATAROOT=$RUNCDATE
 
+    # Utilities needed in the scripts (mostly post)
+    export NWPROD="{doc.platform.NWPROD}"
+    export BASE_GIT="{doc.platform.BASE_GIT}"
+    {doc.platform.config_base_extras}
+    
     # DA cycle info
     export godas_cyc={doc.settings.godas_cyc}
 

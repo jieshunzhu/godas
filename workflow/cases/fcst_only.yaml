@@ -5,5 +5,8 @@ case:
     godas_cyc: 1 # selection of godas cycle: 1(default)- 24h; 2 - 12h; 4 - 6h
     cplflx: .true.
 
+  forc_settings:
+    FHMAX: 12
+
   places:
     workflow_file: layout/fcst_only.yaml

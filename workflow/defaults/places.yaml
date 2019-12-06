@@ -10,7 +10,8 @@ default_places: &default_places
   IODA_EXEC: !expand "{ROOT_GODAS_DIR}/build/bin"
   ROOT_GODAS_DIR: !calc ( tools.realpath(tools.abspath("../../")) )  # godas package path
   HOMEcrow:    !calc tools.crow_install_dir()                    # CROW repo top level
-  EXPDIR :     !expand '{PROJECT_DIR}/{doc.names.experiment}'    # EXPDIR location
+  EXPDIR:     !expand '{PROJECT_DIR}/{doc.names.experiment}'    # EXPDIR location
+  ICSDIR:     '/scratch2/NCEPDEV/climate/Bin.Li/S2S/FROM_HPSS/' # ICs for MOM6 and CICE
   LOG_DIR:     !expand "{EXPDIR}/log"                            # place to logs
   ROTDIR: !expand "{LONG_TERM_TEMP}/comrot/{doc.names.experiment}"   # Rotational directory
   GODAS_RC:   "/scratch2/NCEPDEV/marine/marineda"                 # Root path for external data

@@ -26,16 +26,20 @@ else
   coldstart=false
 fi
 
-FV3PETS=${FV3PETS:-8}
-OCNPETS=${ICEPETS:-8}
+ATM_model=${ATM_model:-'fv3'}
+OCN_model=${OCN_model:-'mom6'}
+ICE_model=${ICE_model:-'cice'}
+
+ATMPETS=${ATMPETS:-8}
+OCNPETS=${OCNPETS:-8}
 ICEPETS=${ICEPETS:-8}
 
 rm -f $DATA/nems.configure
 
-med_petlist_bounds=${med_petlist_bounds:-"0 $(( $FV3PETS-1 ))"}
-atm_petlist_bounds=${atm_petlist_bounds:-"0 $(( $FV3PETS-1 ))"}    #6*8*6+wrtgrps(24)
-ocn_petlist_bounds=${ocn_petlist_bounds:-"$FV3PETS $(( $FV3PETS+$OCNPETS-1 ))"}  #120
-ice_petlist_bounds=${ice_petlist_bounds:-"$(( $FV3PETS+$OCNPETS )) $(( $FV3PETS+$OCNPETS+$ICEPETS-1 ))"}  #48
+med_petlist_bounds=${med_petlist_bounds:-"0 $(( $ATMPETS-1 ))"}
+atm_petlist_bounds=${atm_petlist_bounds:-"0 $(( $ATMPETS-1 ))"}    #6*8*6+wrtgrps(24)
+ocn_petlist_bounds=${ocn_petlist_bounds:-"$ATMPETS $(( $ATMPETS+$OCNPETS-1 ))"}  #120
+ice_petlist_bounds=${ice_petlist_bounds:-"$(( $ATMPETS+$OCNPETS )) $(( $ATMPETS+$OCNPETS+$ICEPETS-1 ))"}  #48
 
 #if [ $CASE = "C96" ] ; then
 #  med_petlist_bounds=${med_petlist_bounds:-'0 149'}
@@ -67,12 +71,12 @@ ice_petlist_bounds=${ice_petlist_bounds:-"$(( $FV3PETS+$OCNPETS )) $(( $FV3PETS+
 # Copy the selected template into run directory
 cp $SCRIPTDIR/nems.configure.$confignamevarfornems.IN tmp1
 sed -i -e "s;@\[med_model\];nems;g" tmp1
-sed -i -e "s;@\[atm_model\];fv3;g" tmp1
+sed -i -e "s;@\[atm_model\];$ATM_model;g" tmp1
 sed -i -e "s;@\[med_petlist_bounds\];$med_petlist_bounds;g" tmp1
 sed -i -e "s;@\[atm_petlist_bounds\];$atm_petlist_bounds;g" tmp1
 
 if [ $cplflx = .true. ]; then
-        sed -i -e "s;@\[ocn_model\];mom6;g" tmp1
+        sed -i -e "s;@\[ocn_model\];$OCN_model;g" tmp1
 	sed -i -e "s;@\[ocn_petlist_bounds\];$ocn_petlist_bounds;g" tmp1
 	sed -i -e "s;@\[DumpFields\];$DumpFields;g" tmp1
 	sed -i -e "s;@\[coldstart\];$coldstart;g" tmp1
@@ -84,7 +88,7 @@ if [ $cplwav = .true. ]; then
 	sed -i -e "s;@\[wav_model\];ww3;g" tmp1
 fi
 if [ $cplice = .true. ]; then
-	sed -i -e "s;@\[ice_model\];cice;g" tmp1
+	sed -i -e "s;@\[ice_model\];$ICE_model;g" tmp1
 	sed -i -e "s;@\[ice_petlist_bounds\];$ice_petlist_bounds;g" tmp1
 fi
 if [ $cplchem = .true. ]; then

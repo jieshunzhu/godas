@@ -22,20 +22,36 @@ platform: !Platform
     {metasched.defvar(doc.schedvar.service_queue, doc.accounting.service_partition.service_queue)}
     {metasched.defvar(doc.schedvar.cpu_project, doc.accounting.cpu_project)}
 
+  # DMPDIR - location of the global dump data.  This is used by the observation
+  # processing scripts, which are not included in the public release.
+  DMPDIR: "/scratch1/NCEPDEV/global/glopara/dump"
+  NWPROD: "/scratch1/NCEPDEV/global/glopara/svn/verif/global/tags/vsdb/nwprod"
+  RTMFIX: "/scratch1/NCEPDEV/global/glopara/crtm/2.2.3/fix_update/"
+  BASE_SVN: "/scratch1/NCEPDEV/global/glopara/svn"
+
+  # BASE_GIT - a directory maintained by emc global model developers
+  # that contains recent versions of source code and executables for
+  # various git repositories. This is used on some platforms to find
+  # executables for this workflow.
+  BASE_GIT: "/scratch1/NCEPDEV/global/glopara/git/global-workflow/port2hera"
+
+  config_base_extras: !expand |
+    export NDATE="$NWPROD/util/exec/ndate"
+    export NHOUR="$NWPROD/util/exec/nhour"
+    export WGRIB="$NWPROD/util/exec/wgrib"
+    export WGRIB2="$NWPROD/util/exec/wgrib2"
+    export COPYGB="$NWPROD/util/exec/copygb"
+    export COPYGB2="$NWPROD/util/exec/copygb2"
+    export GRBINDEX="$NWPROD/util/exec/grbindex"
+    export CNVGRIB="$NWPROD/util/exec/cnvgrib"
+    export CNVGRIB21_GFS="$NWPROD/util/exec/cnvgrib"
+    export POSTGRB2TBL="$BASE_GIT/sorc/gfs_post.fd/parm/params_grib2_tbl_new"
+
   # CHGRP_RSTPROD_COMMAND - this specifies the command to use to
   # restrict access to NOAA "rstprod" data restriction class.
   # This only used for observation processing, data assimilation, and
   # data assimilation archiving, which are not in the public release.
   CHGRP_RSTPROD_COMMAND: "chgrp rstprod"
-
-  # NWPROD - location of the NCEP operational "nwprod" directory, which
-  # only has meaning on the NCEP WCOSS machines.  It is used to get
-  # the paths to certain programs and scripts.
-  NWPROD: "/scratch1/NCEPDEV/global/glopara"
-
-  config_base_extras: !expand |
-    export NDATE="$NWPROD/git/NCEPLIBS-prod_util/v1.1.0/exec/ndate"
-    export NHOUR="$NWPROD/git/NCEPLIBS-prod_util/v1.1.0/exec/nhour"
 
   partitions:
     Evaluate: false
@@ -136,7 +152,7 @@ platform: !Platform
   pan_df: pan_df
 
   # Automatically detect the least used scrub area the user can access:
-  least_used_temp: !Immediate 
+  least_used_temp: !Immediate
     - !FirstTrue
       - do: !expand "{doc.user_places.SCRUB}"
         when: !calc doc.user_places.FIX_SCRUB

@@ -50,12 +50,12 @@ default_resources: &default_resources
       walltime: !calc doc.godas_resource_table.fcst_prep[2]
       max_ppn: !calc doc.godas_resource_table.fcst_prep[1]
 
-  run_fcst: !JobRequest
-    - batch_memory: !calc doc.godas_resource_table.fcst_025[4]
-      mpi_ranks: !calc doc.godas_resource_table.fcst_025[0]
-      walltime: !calc doc.godas_resource_table.fcst_025[2]
-      max_ppn: !calc doc.godas_resource_table.fcst_025[1]
-      OMP_NUM_THREADS: !calc doc.godas_resource_table.fcst_025[3]
+  run_coupled_fcst: !JobRequest
+    - batch_memory: "1024M"
+      mpi_ranks: !icalc doc.forc_settings.ATMPETS+doc.forc_settings.OCNPETS+doc.forc_settings.ICEPETS
+      max_ppn: !icalc doc.forc_settings.get('fcst_max_ppn',None)
+      OMP_NUM_THREADS: !icalc doc.forc_settings.max_threads
+      walltime: !icalc doc.godas_resource_table.fcst_025[2]
 
   run_3denvar: !JobRequest
     - batch_memory: !calc doc.godas_resource_table.r3denvar[4]

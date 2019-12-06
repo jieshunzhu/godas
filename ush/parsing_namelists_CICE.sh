@@ -6,12 +6,12 @@ cat > ice_in <<eof
 &setup_nml
     days_per_year  = 365
   , use_leap_years = .true.
-  , year_init      = $year
-  , istep0         = $steps
-  , dt             = $ICETIM
+  , year_init      = ${SYEAR:-$year}
+  , istep0         = $istep0
+  , dt             = $DT_CICE
   , npt            = $npt
   , ndtd           = 1
-  , runtype        = 'initial' 
+  , runtype        = '$RUNTYPE' 
   , ice_ic         = '$iceic'
   , restart        = .true.
   , restart_ext    = .false.

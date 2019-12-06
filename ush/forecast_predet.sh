@@ -21,6 +21,20 @@ common_predet(){
 	ICSDIR=${ICSDIR:-$pwd}         # cold start initial conditions
 }
 
+DATM_predet(){
+	SYEAR=$(echo  $CDATE | cut -c1-4)
+	SMONTH=$(echo $CDATE | cut -c5-6)
+	SDAY=$(echo   $CDATE | cut -c7-8)
+	SHOUR=$(echo  $CDATE | cut -c9-10)
+	# directory set up
+	if [ ! -d $DATA ]; then mkdir -p $DATA; fi
+	if [ ! -d $DATA/DATM_INPUT ]; then mkdir -p $DATA/DATM_INPUT; fi
+	FHMAX=${FHMAX:-9}
+# Go to Run Directory (DATA)         
+cd $DATA
+
+}
+
 FV3_GFS_predet(){
 	echo "SUB ${FUNCNAME[0]}: Defining variables for FV3GFS"
 	CDUMP=${CDUMP:-gdas}
@@ -221,11 +235,11 @@ FV3_GFS_predet(){
 	echo "SUB ${FUNCNAME[0]}: pre-determination variables set"
 }
 
-FV3_GEFS_def(){
+FV3_GEFS_predet(){
 	echo "SUB ${FUNCNAME[0]}: Defining variables for FV3GEFS"
 }
 
-WW3_def(){
+WW3_predet(){
 	echo "SUB ${FUNCNAME[0]}: Defining variables for WW3"
 }
 

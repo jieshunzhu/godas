@@ -10,7 +10,7 @@
 ## This script is a direct execution.
 #####
 
-Common_model_configure(){
+FV3_model_configure(){
 
 rm -f model_configure
 cat > model_configure <<EOF

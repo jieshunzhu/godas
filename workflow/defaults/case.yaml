@@ -11,6 +11,11 @@ da_settings: !Immediate
   - !MergeMapping
     - !calc doc.da_settings_default
     - !calc doc.case.get('da_settings',{})
+
+forc_settings: !Immediate
+  - !MergeMapping
+    - !calc doc.forc_settings_defaults
+    - !calc doc.case.get('forc_settings',{})
   
 post: !Immediate
   - !MergeMapping

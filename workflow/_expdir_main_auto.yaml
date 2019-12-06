@@ -11,6 +11,7 @@ include:
   - platform.yaml
   - resources_sum.yaml
   - defaults/
+  - schema/
   - config/
   - case.yaml
   - runtime/

@@ -114,6 +114,7 @@ source $SCRIPTDIR/forecast_det.sh  # include functions for run type determinatio
 source $SCRIPTDIR/forecast_postdet.sh	# include functions for variables after run type determination
 source $SCRIPTDIR/nems_configure.sh	# include functions for nems_configure processing
 source $SCRIPTDIR/parsing_model_configure_FV3.sh
+source $SCRIPTDIR/parsing_model_configure_DATM.sh
 
 # Compset string. For nems.configure.* template selection. Default ATM only
 confignamevarfornems=${confignamevarfornems:-'atm'}
@@ -129,8 +130,8 @@ OCNTIM=${OCNTIM:-3600}
 DELTIM=${DELTIM:-450}
 ICETIM=${DELTIM}
 
-CPL_SLOW=${OCNTIM}
-CPL_FAST=${ICETIM}
+CPL_SLOW=${CPL_SLOW:-$OCNTIM}
+CPL_FAST=${CPL_FAST:-$ICETIM}
 # Coupling control switches, for coupling purpose, off by default
 
 [[ $machine = 'sandbox' ]] && RUN=gfs
@@ -149,7 +150,7 @@ common_predet
 
 echo $RUN
 case $RUN in
-	'data') Data_ATM_setup;;
+	'data') DATM_predet;;
 	'gfs') FV3_GFS_predet;;
 	'gdas') FV3_GFS_predet;;
 	'gefs') FV3_GEFS_predet;;
@@ -174,6 +175,7 @@ echo "MAIN: RUN Type Determined"
 echo "MAIN: Post-determination set up of run type"
 echo $RUN
 case $RUN in
+        'data') DATM_postdet;;
 	'gfs') FV3_GFS_postdet;;
 	'gdas') FV3_GFS_postdet;;
 	'gefs') FV3_GEFS_postdet;;
@@ -186,6 +188,7 @@ echo "MAIN: Post-determination set up of run type finished"
 
 echo "MAIN: Writing name lists and model configuration"
 case $RUN in
+        'data') DATM_nml;;
         'gfs') FV3_GFS_nml;;
         'gdas') FV3_GFS_nml;;
         'gefs') FV3_GEFS_nml;;
@@ -194,7 +197,13 @@ esac				#no namelist for data atmosphere
 [[ $cplwav = .true. ]] && WW3_nml
 [[ $cplice = .true. ]] && CICE_nml
 [[ $cplchem = .true. ]] && GSD_nml
-Common_model_configure
+
+case $RUN in
+        'data') DATM_model_configure;;
+        'gfs') FV3_model_configure;;
+        'gdas') FV3_model_configure;;
+        'gefs') FV3_model_configure;;
+esac
 echo "MAIN: Name lists and model configuration written"
 
 echo "MAIN: Writing NEMS Configure file"
@@ -212,8 +221,9 @@ if [ $machine != 'sandbox' ]; then
 	export err=$ERR
 	$ERRSCRIPT || exit $err
 else
-	echo "MAIN: mpirun launch here"
+        echo "MAIN: mpirun launch here"
 fi
+
 
 if [ $machine != 'sandbox' ]; then		
 	case $RUN in
