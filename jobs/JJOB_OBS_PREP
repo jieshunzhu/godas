@@ -1,11 +1,53 @@
-#place holder for obs_prep job
+#!/bin/bash -l
 
 echo "J_JOB for OBS_PREP"
-echo $CDATE
 
 module purge
 source $MOD_PATH/godas.main
 source $MOD_PATH/godas.python
 module list
 
+#############################
+## Source relevant config files
+##############################
+configs="base"
+config_path=$EXPDIR
+for config in $configs; do
+    . $config_path/config.$config
+    status=$?
+    [[ $status -ne 0 ]] && exit $status
+done
+
+
+##############################################
+## Obtain unique process id (pid) and make temp directory
+###############################################
+export jobid=${job}.${PBS_JOBID:-$$}
+export pid=${pid:-$$}
+export outid=${outid:-"LL$job"}
+export DATA=${DATA:-${DATAROOT}/${jobid:?}}
+mkdir -p $DATA
+cd $DATA
+
+###############################################
+## Run setpdy and initialize PDY variables
+###############################################
+export cycle="t${cyc}z"
+setpdy.sh
+. ./PDY
+
+##############################################
+## Determine Job Output Name on System
+###############################################
+export pgmout="OUTPUT.${pid}"
+export pgmerr=errfile
+
+###############################################
+## Set variables used in the exglobal script
+###############################################
+export CDATE=${CDATE:-${PDY}${cyc}}
+export CDUMP=${CDUMP:-"godas"}
+export RUN=${RUN:-"data"}
+
+# Run observation prep script
 ${ROOT_GODAS_DIR}/scripts/main_obs_prep.sh

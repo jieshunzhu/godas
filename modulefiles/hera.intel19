@@ -7,3 +7,5 @@ module use -a /scratch1/NCEPDEV/da/Daniel.Holdaway/opt/modulefiles
 module load apps/jedi/intel-19.0.5.281
 module load nco
 
+module use -a /scratch2/NCEPDEV/nwprod/NCEPLIBS/modulefiles
+module load prod_util/1.1.0

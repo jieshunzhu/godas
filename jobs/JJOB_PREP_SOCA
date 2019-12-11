@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -x
 
 cat <<EOF
 #================================================================================
@@ -14,13 +14,68 @@ module purge
 source $MOD_PATH/godas.main
 module list
 
-echo $RUNCDATE
+#############################
+## Source relevant config files
+##############################
 
-if [ ! -d $RUNCDATE ]; then mkdir -p $RUNCDATE; fi
-cd $RUNCDATE
+configs="base"
+config_path=$EXPDIR
+for config in $configs; do
+    . $config_path/config.$config
+    status=$?
+    [[ $status -ne 0 ]] && exit $status
+done
+
+##############################################
+# Obtain unique process id (pid) and make temp directory
+##############################################
+
+export jobid=${job}.${PBS_JOBID:-$$}
+export pid=${pid:-$$}
+export outid=${outid:-"LL$job"}
+export DATA=${DATA:-${DATAROOT}/${jobid:?}}
+mkdir -p $DATA
+cd $DATA
+
+###############################################
+## Run setpdy and initialize PDY variables
+###############################################
+
+export cycle="t${cyc}z"
+setpdy.sh
+. ./PDY
+
+##############################################
+## Determine Job Output Name on System
+###############################################
+export pgmout="OUTPUT.${pid}"
+export pgmerr=errfile
+
+###############################################
+## Set variables used in the exglobal script
+###############################################
+export CDATE=${CDATE:-${PDY}${cyc}}
+export CDUMP=${CDUMP:-"godas"}
+export RUN=${RUN:-"data"}
+
+###############################################
+echo  
+echo "The system runs at $DATA"
+echo "COMIN $ROTDIR/$CDUMP.$PDY/$cyc/"
+echo
+echo "Root GODAS " ${ROOT_GODAS_DIR}
+echo
+echo "SOCA_STATIC="$SOCA_STATIC
+
+COMIN=$ROTDIR/$CDUMP.$PDY/$cyc/
+COMOUT=$ROTDIR/$CDUMP.$PDY/$cyc/
+
+if [ ! -d $COMIN ]; then mkdir -p $COMIN; fi
+cd $DATA
+ln -s $COMIN/* .
 
 # Generate ocean-ice grid
-if [ -f "${RUNCDATE}/soca_gridspec.nc" ]; then
+if [ -f "${COMIN}/soca_gridspec.nc" ]; then
     echo
     echo 'SOCA grid exist, by-passing grid generation.'
     echo
@@ -45,3 +100,12 @@ if [ ${NO_ENS_MBR}>1 ]; then
     echo
     srun -n $NPE ${SOCA_EXEC}/soca_parameters.x ./yaml/parameters_bump_loc.yml
 fi
+
+cp -r $DATA/Vertical_coordinate.nc $COMOUT
+cp -r $DATA/soca_gridspec.nc $COMOUT
+cp -r $DATA/available_diags.000000 $COMOUT
+cp -r $DATA/MOM_parameter_doc.short $COMOUT
+cp -r $DATA/MOM_parameter_doc.layout $COMOUT
+cp -r $DATA/MOM_parameter_doc.debugging $COMOUT
+cp -r $DATA/MOM_parameter_doc.all $COMOUT
+cp -r $DATA/bump $COMOUT

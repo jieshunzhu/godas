@@ -14,7 +14,62 @@ module purge
 source $MOD_PATH/godas.main
 module list
 
-cd $RUNCDATE
+#############################
+## Source relevant config files
+##############################
+configs="base"
+config_path=$EXPDIR
+for config in $configs; do
+    . $config_path/config.$config
+    status=$?
+    [[ $status -ne 0 ]] && exit $status
+done
+
+##############################################
+# Obtain unique process id (pid) and make temp directory
+##############################################
+export jobid=${job}.${PBS_JOBID:-$$}
+export pid=${pid:-$$}
+export outid=${outid:-"LL$job"}
+export DATA=${DATA:-${DATAROOT}/${jobid:?}}
+mkdir -p $DATA
+cd $DATA
+
+###############################################
+## Run setpdy and initialize PDY variables
+###############################################
+export cycle="t${cyc}z"
+setpdy.sh
+. ./PDY
+
+##############################################
+## Determine Job Output Name on System
+###############################################
+export pgmout="OUTPUT.${pid}"
+export pgmerr=errfile
+
+###############################################
+## Set variables used in the exglobal script
+###############################################
+export CDATE=${CDATE:-${PDY}${cyc}}
+export CDUMP=${CDUMP:-"godas"}
+export RUN=${RUN:-"data"}
+
+###############################################
+echo  
+echo "The system runs at $DATA"
+echo
+echo "Root GODAS " ${ROOT_GODAS_DIR}
+echo
+echo "SOCA_STATIC="$SOCA_STATIC
+
+COMIN=$ROTDIR/$CDUMP.$PDY/$cyc/
+COMOUT=$ROTDIR/$CDUMP.$PDY/$cyc/
+
+cd $DATA
+
+ln -s $COMIN/* .
+ln -s $COMIN Data
 
 cat <<EOF
 #============================================

@@ -3,7 +3,7 @@
 echo 'main_obs_prep.sh starts'
 echo CDATE is $CDATE
 
-ObsRunDir=$RUNCDATE/Data/${CDATE}    #Path for observations to be ingested by DA
+ObsRunDir=$ROTDIR/$CDUMP.$PDY/$cyc/    #Path for observations to be ingested by DA
 mkdir -p ${ObsRunDir}
 
 # Prep absolute dynamic topography obs

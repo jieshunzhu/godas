@@ -29,11 +29,11 @@ shift $((OPTIND -1))
 ## Setup Jo cost function
 ##-----------------------
 
-DATADIR=${RUNDIRC}/Data
+DATADIR=${DATA}/Data
 
-mkdir -p ${DATADIR}
+ln -s ${ROTDIR}/$CDUMP.$PDY/$cyc $DATADIR
 
-obsdatabase=${DATADIR}/${CDATE} 
+obsdatabase=${DATADIR}
 echo "obsdatabase="$obsdatabase
 
 # Add adt obs to Jo

@@ -99,8 +99,7 @@ config_base:
     export EXPDIR="{doc.places.EXPDIR}"
     export ROTDIR="{doc.places.ROTDIR}"
     export RUNDIR="{doc.places.RUNDIR}"
-    export RUNCDATE="{doc.places.RUNDIR}/$CDATE"
-    export DATAROOT=$RUNCDATE
+    export DATAROOT=$RUNDIR
 
     # Utilities needed in the scripts (mostly post)
     export NWPROD="{doc.platform.NWPROD}"
