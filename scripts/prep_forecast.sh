@@ -13,6 +13,23 @@
 ######################################################################
 ######################################################################
 
+while getopts "n:" opt; do
+   case $opt in
+      n) mbr=("$OPTARG");;
+   esac
+done
+shift $((OPTIND -1))
+
+if [ -z "$mbr" ]
+then 
+   DATA=${RUNCDATE}/fcst
+   nextic=$RUNCDATE/../NEXT_IC
+   keepic=$RUNCDATE/../${CDATE}_IC
+else
+   DATA=${RUNCDATE}"/fcst/mem"$mbr
+   nextic=$RUNCDATE/../NEXT_IC/mem$mbr
+   keepic=$RUNCDATE/../${CDATE}_IC/   
+fi
 #Variables which need to be defined: 
 
 #Generic variables 
@@ -24,10 +41,6 @@ FIXcice=${ROOT_GODAS_DIR}/fix/CICE_FIX_mx025
 FHMAX=${FHMAX:-24} #total forecast length in hours
 restart_interval=${restart_interval:-86400}  # number of seconds for writing restarts (for non-cold start) default to 1 day interval
 
-DATA=${RUNCDATE}/fcst
-
-
-
 echo "CDATE is $CDATE"
 echo "RUNCDATE is ${RUNCDATE}" 
 echo "DATA is ${DATA}"
@@ -35,7 +48,6 @@ echo "SCRIPTDIR is $SCRIPTDIR"
 echo "TEMPLATEDIR is $TEMPLATEDIR"
 echo "FHMAX is $FHMAX"
 echo "restart interval is ${restart_interval}"
-
 
 #################################
 # Variables that are for the most part hard coded but could be pulled out and configured/etc. 
@@ -94,12 +106,13 @@ DumpFields=${NEMSDumpFields:-false}   #Dump diagnostic netcdf fields from compon
 CPL_SLOW=${CPL_SLOW:-$DT_THERM_MOM6}  #slow coupling time step
 CPL_FAST=${CPL_FAST:-$DT_ATMOS}       #fast coupling time step 
 
-#Calculated Varaibles: 
+#Calculated Variables: 
 SYEAR=$(echo  $CDATE | cut -c1-4)
 SMONTH=$(echo $CDATE | cut -c5-6)
 SDAY=$(echo   $CDATE | cut -c7-8)
 SHOUR=$(echo  $CDATE | cut -c9-10)
 NTASKS_TOT=${NTASKS_TOT:-"$(( $ATMPETS+$OCNPETS+$ICEPETS ))"} #240
+NEARESTCDATE=$(echo $CDATE | cut -c1-8)00
 
 ######################################################################
 ######################################################################
@@ -112,7 +125,6 @@ echo "Set up Directories"
 
 #Set up forecast run directory:
  
-DATA=${RUNCDATE}/fcst
 if [ ! -d $DATA ]; then mkdir -p $DATA; fi
 if [ ! -d $DATA/INPUT ]; then mkdir -p $DATA/INPUT; fi
 if [ ! -d $DATA/restart ]; then mkdir -p $DATA/restart; fi
@@ -281,7 +293,11 @@ sed -i -e "s;DT_DYNAM_MOM6;${DT_DYNAM_MOM6};g" tmp1
 # Rename to proper input ice input name
 mv tmp1 $DATA/INPUT/MOM_input
 
-cp $TEMPLATEDIR/MOM_override $DATA/INPUT/MOM_override
+# TODO: Append to template MOM_override? My (Guillaume) opinion is to keep it empty 
+#       in the static files, and populate it from scratch as needed. 
+#cp $TEMPLATEDIR/MOM_override $DATA/INPUT/MOM_override
+echo 'RESTART_CHECKSUMS_REQUIRED = False' > $DATA/INPUT/MOM_override
+cat $DATA/INPUT/MOM_override
 
 ######################################################################
 # 2.6 CICE input                                                     #
@@ -299,10 +315,10 @@ tr_pond_lvl=${tr_pond_lvl:-".true."} # Use level melt ponds tr_pond_lvl=true
 # restart_pond_lvl (if tr_pond_lvl=true):
 #   -- if true, initialize the level ponds from restart (if runtype=continue) 
 #   -- if false, re-initialize level ponds to zero (if runtype=initial or continue)  
-if [ -d $RUNCDATE/../NEXT_IC ]; then
+if [ -d $nextic ]; then
   #continuing run "hot start" 
   RUNTYPE='continue'
-  USE_RESTART_TIME='.true.'
+  USE_RESTART_TIME='.false.'
   restart_pond_lvl=${restart_pond_lvl:-".true."}    
 else 
   #using cold start IC
@@ -433,12 +449,12 @@ echo "Copy mediator restart files"
 if [ $inistep = 'cold' ]; then
   echo "mediator cold start run sequence... error currently not set up for this"
 else
-  if [ -d $RUNCDATE/../NEXT_IC ]; then 
+  if [ -d $nextic ]; then 
     #cp $ROTDIR/$CDUMP.$PDY/$cyc/mediator_* $DATA/
-    cp $RUNCDATE/../NEXT_IC/mediator_* $DATA/
+    cp $nextic/mediator_* $DATA/
   else 
-    if [ $CDATE = '2011100100' ]; then
-      echo "Copying mediator restarts for $CDATE from regtest area"
+    if [ $NEARESTCDATE = '2011100100' ]; then
+      echo "Copying mediator restarts for $NEARESTCDATE from regtest area"
       ICSDIR="/scratch1/NCEPDEV/nems/emc.nemspara/RT/DATM-MOM6-CICE5/master-20191106/MEDIATOR_2011100100"
       cp $ICSDIR/mediator* $DATA/
     else 
@@ -455,17 +471,17 @@ fi
 echo "Copy MOM6 ICs" 
 
 # Copy MOM6 ICs
-if [ -d $RUNCDATE/../NEXT_IC ]; then
+if [ -d $nextic ]; then
     # Get IC from previous cycle
     ##cp ../NEXT_IC/cice_bkg.nc $RUNCDATE/INPUT_MOM6/cice_bkg.nc
-    cp $RUNCDATE/../NEXT_IC/MOM*.nc $DATA/INPUT/
+    cp $nextic/MOM*.nc $DATA/INPUT/
 else 
 
   echo "CICE5 IC is being copied from benchmark area for CDATE $CDATE" 
   echo "Note these only exist for the 01 and 15 ths of every month" 
   #TODO: hardcoded IC date for first date for benchmark 
   ICSDIR=/scratch2/NCEPDEV/climate/Bin.Li/S2S/FROM_HPSS/
-  cp -pf $ICSDIR/$CDATE/mom6_da/MOM*nc $DATA/INPUT/
+  cp -pf $ICSDIR/$NEARESTCDATE/mom6_da/MOM*nc $DATA/INPUT/
 fi
 
 ######################################################################
@@ -475,16 +491,16 @@ fi
 
 echo "Copy CICE5 ICs" 
 
-if [ -d $RUNCDATE/../NEXT_IC ]; then
+if [ -d $nextic ]; then
   #cp $ROTDIR/$CDUMP.$PDY/$cyc/$iceic $DATA/restart/
-  cp $RUNCDATE/../NEXT_IC/restart/* $DATA/restart/
+  cp $nextic/restart/* $DATA/restart/
 else 
   echo "CICE5 IC is being copied from benchmark area for CDATE $CDATE" 
   echo "Note these only exist for the 01 and 15 ths of every month" 
   #first IC: generated from CFSv2
   #TODO: hardcoded IC date for first date for benchmark
   ICSDIR=/scratch2/NCEPDEV/climate/Bin.Li/S2S/FROM_HPSS/
-  cp -p $ICSDIR/$CDATE/cice5_model_0.25.res_$CDATE.nc $DATA/$iceic
+  cp -p $ICSDIR/$NEARESTCDATE/cice5_model_0.25.res_$NEARESTCDATE.nc $DATA/$iceic
   #TODO: could grab cpc instead of cfsr for this IC (need cice namelist changes for cpc)
   #cp -p $ICSDIR/$CDATE/cpc/cice5_model_0.25.res_$CDATE.nc ./cice5_model.res_$CDATE.nc
 fi
@@ -493,8 +509,9 @@ fi
 # 4.4 Remove NEXT_IC DIR                                             #
 ######################################################################
 
-echo "removing NEXT_IC DIR" 
-rm -rf $RUNCDATE/../NEXT_IC
+#echo "removing NEXT_IC DIR"
+
+mv $nextic $keepic
 
 ######################################################################
 #   End of prep_forecast.sh                                          #
