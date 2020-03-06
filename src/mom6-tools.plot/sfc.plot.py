@@ -28,7 +28,7 @@ else:
 grd= MOM6grid(args.grid)
 
 clim_sst=[-2,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]
-clim_ssh=[-1.5,-1.0,-0.5,0.0,0.5,1.0,1.5,2.0]
+clim_ssh=[-1.8,-1.6,-1.4,-1.2,-1.0,-0.8,-0.6,-0.4,-0.2,0,0.2,0.4,0.6,0.8,1.0,1.2,1.4]
 clim_sss=[30,31,32,33,34,35,36,37,38,39,40]
 
 for filename in args.data:
@@ -45,9 +45,9 @@ for filename in args.data:
       ssh_fig = str(args.figs_path+'/'+path_.stem + '_SSH.png')
       sss_fig = str(args.figs_path+'/'+path_.stem + '_SSS.png')
 
-    title_sst='SST:'+str(name_)
-    title_ssh='SSH:'+str(name_)
-    title_sss='SSS:'+str(name_)
+    title_sst='SST (degC):'+str(name_)
+    title_ssh='SSH (m):'+str(name_)
+    title_sss='SSS (psu):'+str(name_)
 
     xyplot(nc.SST[0,:,:].to_masked_array(),grd.geolon,grd.geolat,clim=clim_sst,title=title_sst,save=sst_fig)
     xyplot(nc.SSH[0,:,:].to_masked_array(),grd.geolon,grd.geolat,clim=clim_ssh,title=title_ssh,save=ssh_fig)
