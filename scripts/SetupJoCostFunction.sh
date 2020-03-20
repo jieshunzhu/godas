@@ -68,11 +68,12 @@ else
 fi
 
 # Add ghrsst to Jo.
-ListofSST="windsat_l3u.ghrsst \
-           gmi_l3u.ghrsst \
-           amsr2_l3u.ghrsst \
-           avhrrmta_l3u.nesdis \
-           avhrr19_l3u.nesdis"
+#ListofSST="windsat_l3u.ghrsst \
+#           gmi_l3u.ghrsst \
+#           amsr2_l3u.ghrsst \
+#           avhrrmta_l3u.nesdis \
+#           avhrr19_l3u.nesdis"
+ListofSST="avhrr19_l3u.nesdis"
 for SSTsource in $ListofSST; do
    obsfile=$obsdatabase/ioda.sst.${SSTsource}.${DA_SLOT_LEN}h.nc 
    echo $obsfile

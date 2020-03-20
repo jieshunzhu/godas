@@ -58,7 +58,7 @@ case $SSTsource in
    "sst.avhrr19_l3u.nesdis")
       sat=AVHRR19
       subsample=true
-      skip=250
+      skip=3 #250
       ;;
    "sst.avhrrmta_l3u.nesdis")
       sat=AVHRRMTA
